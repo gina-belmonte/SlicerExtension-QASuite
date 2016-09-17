@@ -219,7 +219,24 @@ class LabelStatisticsExtLogic(LabelStatisticsLogic):
             nrm=numpy.sum(distr[label]*dx)
 
           if nbins>0:
-            hst,bins=numpy.histogram(distr[label],nbins,[s[0],s[1]],density=normalize)
+            # #Freedman Diaconis Estimator
+            # IQR=numpy.percentile(distr[label],75)-numpy.percentile(distr[label],25)
+            # bnw=2*IQR/numpy.power(distr[label].size,1.0/3.0)
+            # nb=int((s[1]-s[0])/bnw)
+            # #Rice
+            # nb=int(2*numpy.power(distr[label].size,1.0/3.0))
+            #Doane
+            # mu=numpy.mean(distr[label])
+            # std=numpy.std(distr[label])
+            # g1=numpy.mean(numpy.power((distr[label]-mu)/float(std),3))
+            # n=distr[label].size
+            # sg1=numpy.sqrt(float(6*(n-2))/float(((n+1)*(n+3))))
+            # nb=int(1+numpy.log2(n)+numpy.log2(1+numpy.abs(g1)/sg1))
+
+            nb=nbins
+            ntuple=nb
+            print "ciccio " + str(label) + " " + str(nb)
+            hst,bins=numpy.histogram(distr[label],bins=nb,range=[s[0],s[1]],density=normalize)
 
           for n in range(ntuple):
             if nbins>0:
