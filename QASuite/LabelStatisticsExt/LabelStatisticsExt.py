@@ -54,32 +54,72 @@ class LabelStatisticsExtWidget(LabelStatisticsWidget):
     self.chartButton.connect('clicked()', self.onChart)
     self.chartOption.connect('currentIndexChanged(int)',self.onChartOption)
 
-    self.histFrame = qt.QFrame()
-    self.histFrame.setLayout(qt.QFormLayout())
+    self.histFrame = qt.QGroupBox()
+    self.histFrame.setTitle("Histogram")
+    self.histFrame.setToolTip('Rebin distribution')
+    self.histFrame.checkable=True
+    self.histFrame.checked=False
+    self.histFrame.enabled=False
+    histLay = qt.QFormLayout(self.histFrame)
+    self.parent.layout().removeWidget(self.chartFrame)
+    self.parent.layout().removeWidget(self.exportToTableButton)
     self.parent.layout().addWidget(self.histFrame)
+    self.parent.layout().addWidget(self.chartFrame)    
+    self.parent.layout().addWidget(self.exportToTableButton)
+    self.histFrame.connect('stateChanged(int)',self.onHistCheck)
 
-    self.hist = qt.QCheckBox()
-    self.hist.setText('Histogram')
-    self.hist.checked = False
-    self.hist.enabled = True
-    self.hist.setToolTip('Rebin distribution')
-    self.histFrame.layout().addWidget(self.hist)
-    self.hist.connect('stateChanged(int)',self.onHistCheck)
+    # self.hist = qt.QCheckBox()
+    # self.hist.setText('Histogram')
+    # self.hist.checked = False
+    # self.hist.enabled = True
+    # self.hist.setToolTip('Rebin distribution')
+    # self.histFrame.layout().addWidget(self.hist)
+    # self.hist.connect('stateChanged(int)',self.onHistCheck)
+
+    NBlay=qt.QHBoxLayout()
+    self.FBRB=qt.QRadioButton()
+    self.FBRB.setText("FB")
+    self.FBRB.setToolTip("w=2*IQR/N^(1/3)")
+    self.FBRB.checked=True
+    NBlay.addWidget(self.FBRB)
+    self.RiceRB=qt.QRadioButton()
+    self.RiceRB.setText("Rice")
+    self.RiceRB.setToolTip("nb=2*N^(1/3)")
+    NBlay.addWidget(self.RiceRB)
+    self.DoaneRB=qt.QRadioButton()
+    self.DoaneRB.setText("Doane")
+    self.DoaneRB.setToolTip("nb=1+log2(N)+log2(1+abs(g1)/sg1)")
+    NBlay.addWidget(self.DoaneRB)
+    self.ManualRB=qt.QRadioButton()
+    self.ManualRB.setText("Manual")
+    self.ManualRB.connect("toggled(bool)",self.onHistCheck)
+    NBlay.addWidget(self.ManualRB)
 
     self.nbinsSB=qt.QSpinBox()
     self.nbinsSB.minimum=1
     self.nbinsSB.maximum=10000
     self.nbinsSB.value=100
     self.nbinsSB.enabled=False
-    self.histFrame.layout().addRow("Number of bins: ",self.nbinsSB)
+    NBlay.addWidget(self.nbinsSB)
+    NBlay.addStretch(1)
+    histLay.addRow("N. bins",NBlay)
+
+    self.applyButton.connect('clicked()', self.onApply)
+
+    # Add vertical spacer
+    self.parent.layout().addStretch(5)
+
+  def onApply(self):
+    LabelStatisticsWidget.onApply(self)
+    self.onChartOption(self.chartOption.currentIndex)
 
   def onChartOption(self,opt):
     self.chartNormalize.enabled = (opt==(len(self.chartOptions)-1))
-    self.hist.enabled = (opt==(len(self.chartOptions)-1))
-    self.nbinsSB.enabled = self.hist.checked and (opt==(len(self.chartOptions)-1))
+    self.histFrame.enabled = (opt==(len(self.chartOptions)-1))
+    self.onHistCheck()
 
   def onHistCheck(self):
-    self.nbinsSB.enabled = self.hist.checked and self.hist.enabled
+    self.nbinsSB.enabled = self.histFrame.checked and self.histFrame.enabled and self.ManualRB.checked
 
   def onChart(self):
     """chart the label statistics
@@ -87,12 +127,19 @@ class LabelStatisticsExtWidget(LabelStatisticsWidget):
     valueToPlot = self.chartOptions[self.chartOption.currentIndex]
     ignoreZero = self.chartIgnoreZero.checked
     normalize = self.chartNormalize.checked
-    nbins=-1
-    if self.nbinsSB.enabled:
-      nbins = self.nbinsSB.value
+    if self.histFrame.checked:
+      if self.FBRB.checked:
+        nbins="FB"
+      elif self.RiceRB.checked:
+        nbins="Rice"
+      elif self.DoaneRB.checked:
+        nbins="Doane"
+      else:
+        nbins = self.nbinsSB.value
+    else:
+      nbins=-1
     self.logic = LabelStatisticsExtLogic(self.grayscaleNode, self.labelNode)
     self.logic.createStatsChart(self.labelNode,valueToPlot,ignoreZero,normalize,nbins)
-
 
 #
 # LabelStatisticsExtLogic
@@ -173,35 +220,48 @@ class LabelStatisticsExtLogic(LabelStatisticsLogic):
               try:
                   dslab=distr[label]
               except: #TODO: errorcode
-                if nbins>0:
-                  distr[label]=numpy.full(self.labelStats[label,"Count"],0)
-                  dslab=distr[label]
-                  cont[label]=-1
-                else:
-                  xr=s[1]-s[0]
-                  distr[label]=numpy.full(xr+1,0)
-                  dslab=distr[label]
+                distr[label]=numpy.full(self.labelStats[label,"Count"],0)
+                dslab=distr[label]
+                cont[label]=-1
                   
-              if nbins>0:
-                cont[label]=cont[label]+1
-                dslab[cont[label]]=val
-              else:
-                dslab[val-s[0]]+=1 #TODO: only integer values for now
+              cont[label]=cont[label]+1
+              dslab[cont[label]]=val
 
       dx=numpy.diff(sr[0:2])[0]
       for n in range(samples):
         label=self.labelStats["Labels"][n]
         if not (ignoreZero and label == 0):
-          #name="Label-"+str(label)
+          if nbins=="FB":
+            #Freedman Diaconis Estimator
+            IQR=numpy.percentile(distr[label],75)-numpy.percentile(distr[label],25)
+            bnw=2*IQR/numpy.power(distr[label].size,1.0/3.0)
+            nb=int((s[1]-s[0])/bnw)
+          elif nbins=="Rice":
+            #Rice
+            nb=int(2*numpy.power(distr[label].size,1.0/3.0))
+          elif nbins=="Doane":
+            #Doane
+            mu=numpy.mean(distr[label])
+            std=numpy.std(distr[label])
+            g1=numpy.mean(numpy.power((distr[label]-mu)/float(std),3))
+            n=distr[label].size
+            sg1=numpy.sqrt(float(6*(n-2))/float(((n+1)*(n+3))))
+            nb=int(1+numpy.log2(n)+numpy.log2(1+numpy.abs(g1)/sg1))
+          elif nbins<=0:
+            nb=int(s[1]-s[0]+1) #TODO: if is not integer?
+          else:
+            #Manual
+            nb=nbins
+            
           if nbins>0:
-            nm="-hist"
+            nm="-hist-"+str(nb)
           else:
             nm=""
           name=colorNode.GetColorName(label) + "-" + self.grayscaleNode.GetName() + nm
-          if nbins>0:
-            ntuple=nbins
-          else:
-            ntuple=len(distr[label])
+
+          ntuple=nb
+          print "ciccio " + str(label) + " " + str(nb)
+          hst,bins=numpy.histogram(distr[label],bins=nb,range=[s[0],s[1]],density=normalize)
 
           arrayNode = slicer.mrmlScene.GetNodesByClassByName("vtkMRMLDoubleArrayNode",name).GetItemAsObject(0)
 
@@ -214,37 +274,9 @@ class LabelStatisticsExtLogic(LabelStatisticsLogic):
           arrayD.SetNumberOfComponents(2)
           arrayD.SetNumberOfTuples(ntuple)
 
-          nrm=1
-          if normalize:
-            nrm=numpy.sum(distr[label]*dx)
-
-          if nbins>0:
-            # #Freedman Diaconis Estimator
-            # IQR=numpy.percentile(distr[label],75)-numpy.percentile(distr[label],25)
-            # bnw=2*IQR/numpy.power(distr[label].size,1.0/3.0)
-            # nb=int((s[1]-s[0])/bnw)
-            # #Rice
-            # nb=int(2*numpy.power(distr[label].size,1.0/3.0))
-            #Doane
-            # mu=numpy.mean(distr[label])
-            # std=numpy.std(distr[label])
-            # g1=numpy.mean(numpy.power((distr[label]-mu)/float(std),3))
-            # n=distr[label].size
-            # sg1=numpy.sqrt(float(6*(n-2))/float(((n+1)*(n+3))))
-            # nb=int(1+numpy.log2(n)+numpy.log2(1+numpy.abs(g1)/sg1))
-
-            nb=nbins
-            ntuple=nb
-            print "ciccio " + str(label) + " " + str(nb)
-            hst,bins=numpy.histogram(distr[label],bins=nb,range=[s[0],s[1]],density=normalize)
-
           for n in range(ntuple):
-            if nbins>0:
-              arrayD.SetComponent(n, 0, bins[n]) #TODO
-              arrayD.SetComponent(n, 1, hst[n])
-            else:
-              arrayD.SetComponent(n, 0, sr[n])
-              arrayD.SetComponent(n, 1, distr[label][n]/nrm)
+            arrayD.SetComponent(n, 0, bins[n]) #TODO
+            arrayD.SetComponent(n, 1, hst[n])
             
           state = chartNode.StartModify()
           chartNode.AddArray(name, arrayNode.GetID())
