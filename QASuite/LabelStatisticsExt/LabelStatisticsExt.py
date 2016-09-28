@@ -81,18 +81,22 @@ class LabelStatisticsExtWidget(LabelStatisticsWidget):
     self.FBRB.setText("FB")
     self.FBRB.setToolTip("w=2*IQR/N^(1/3)")
     self.FBRB.checked=True
+    NBlay.addStretch(1)
     NBlay.addWidget(self.FBRB)
     self.RiceRB=qt.QRadioButton()
     self.RiceRB.setText("Rice")
     self.RiceRB.setToolTip("nb=2*N^(1/3)")
+    NBlay.addStretch(1)
     NBlay.addWidget(self.RiceRB)
     self.DoaneRB=qt.QRadioButton()
     self.DoaneRB.setText("Doane")
     self.DoaneRB.setToolTip("nb=1+log2(N)+log2(1+abs(g1)/sg1)")
+    NBlay.addStretch(1)
     NBlay.addWidget(self.DoaneRB)
     self.ManualRB=qt.QRadioButton()
     self.ManualRB.setText("Manual")
     self.ManualRB.connect("toggled(bool)",self.onHistCheck)
+    NBlay.addStretch(1)
     NBlay.addWidget(self.ManualRB)
 
     self.nbinsSB=qt.QSpinBox()
@@ -102,7 +106,7 @@ class LabelStatisticsExtWidget(LabelStatisticsWidget):
     self.nbinsSB.enabled=False
     NBlay.addWidget(self.nbinsSB)
     NBlay.addStretch(1)
-    histLay.addRow("N. bins",NBlay)
+    histLay.addRow("N. bins: ",NBlay)
 
     self.applyButton.connect('clicked()', self.onApply)
 
