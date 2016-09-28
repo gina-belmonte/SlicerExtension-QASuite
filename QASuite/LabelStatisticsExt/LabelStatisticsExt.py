@@ -202,6 +202,7 @@ class LabelStatisticsExtLogic(LabelStatisticsLogic):
       sr=range(int(s[0]),int(s[1])+1)
 
       distr={}
+      cont={}
       for sl in range(nslices):
         if ignoreZero:
             xmin=rect['xmin'][sl]
@@ -214,7 +215,6 @@ class LabelStatisticsExtLogic(LabelStatisticsLogic):
           ymin=0
           ymax=ROI.GetDimensions()[1]
 
-        cont={}
         for x in range(xmin,xmax+1):
           for y in range(ymin,ymax+1):
             label=ROI.GetScalarComponentAsDouble(x,y,sl,0)
@@ -222,12 +222,12 @@ class LabelStatisticsExtLogic(LabelStatisticsLogic):
             if not (ignoreZero and label == 0): #TODO : use numpy.histogram
               val=im.GetScalarComponentAsDouble(x,y,sl,0)
               try:
-                  dslab=distr[label]
+                dslab=distr[label]
               except: #TODO: errorcode
                 distr[label]=numpy.full(self.labelStats[label,"Count"],0)
                 dslab=distr[label]
                 cont[label]=-1
-                  
+
               cont[label]=cont[label]+1
               dslab[cont[label]]=val
 

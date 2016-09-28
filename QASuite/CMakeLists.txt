@@ -48,6 +48,7 @@ add_subdirectory(MTF)
 add_subdirectory(SliceThk)
 add_subdirectory(PhantomsLib)
 add_subdirectory(LabelStatisticsExt)
+add_subdirectory(CrossCorrCalculator)
 
 #-----------------------------------------------------------------------------
 include(${Slicer_EXTENSION_CPACK})
