@@ -76,7 +76,8 @@ class EdgeDetectWidget (QCLib.genericPanel):
     # output volume selector
     #
     self.outputSelector = slicer.qMRMLNodeComboBox()
-    self.outputSelector.nodeTypes = ["vtkMRMLScalarVolumeNode"]
+    #self.outputSelector.nodeTypes = ["vtkMRMLScalarVolumeNode"]
+    self.outputSelector.nodeTypes = ["vtkMRMLLabelMapVolumeNode"]
     #self.outputSelector.addAttribute( "vtkMRMLScalarVolumeNode", "LabelMap", 1 )
     self.outputSelector.selectNodeUponCreation = True
     self.outputSelector.addEnabled = True
@@ -194,9 +195,9 @@ class EdgeDetectWidget (QCLib.genericPanel):
         imd.SetSpacing(mim.GetSpacing())
         imd.SetOrigin(mim.GetOrigin())
 
-        if mim.GetScalarTypeMin()>=0: #unsigned
-          mim.SetScalarType(mim.GetScalarType()-1)
-        imd.SetScalarType(mim.GetScalarType())
+        # if mim.GetScalarTypeMin()>=0: #unsigned
+        #   mim.SetScalarType(mim.GetScalarType()-1)
+        # imd.SetScalarType(mim.GetScalarType())
 
         IJK=vtk.vtkMatrix4x4()
         master.GetIJKToRASMatrix(IJK)
@@ -229,14 +230,14 @@ class EdgeDetectWidget (QCLib.genericPanel):
     selectionNode.SetReferenceActiveVolumeID(master.GetID())
 
     if algorithm==1:
-      merge.SetLabelMap(0)
+      #merge.SetLabelMap(0)
       merge.GetDisplayNode().SetAndObserveColorNodeID(slicer.mrmlScene.GetNodesByClassByName('vtkMRMLColorNode','Grey').GetItemAsObject(0).GetID())
       selectionNode.SetReferenceSecondaryVolumeID(merge.GetID())
       selectionNode.SetReferenceActiveLabelVolumeID(None)
     else:
       #non so perche ma altrimenti non funziona
       merge.GetDisplayNode().SetAndObserveColorNodeID(slicer.mrmlScene.GetNodesByClassByName('vtkMRMLColorNode','Grey').GetItemAsObject(0).GetID())
-      merge.SetLabelMap(1)
+      #merge.SetLabelMap(1)
       merge.GetDisplayNode().SetAndObserveColorNodeID(self.coln.GetID())
       selectionNode.SetReferenceSecondaryVolumeID(None)
       selectionNode.SetReferenceActiveLabelVolumeID(merge.GetID())
@@ -287,11 +288,11 @@ class EdgeDetectLogic:
     im=self.input.GetImageData()
     cast=vtk.vtkImageCast()
     cast.SetOutputScalarTypeToDouble()
-    cast.SetInput(im)
+    cast.SetInputData(im)
     cast.Update()
 
     em=slicer.vtkITKEdgeDetection()
-    em.SetInput(cast.GetOutput())
+    em.SetInputData(cast.GetOutput())
     em.SetAlgorithmInt(self.algorithm)
     em.Setvariance(self.variance)
     em.Setthreshold(self.threshold)

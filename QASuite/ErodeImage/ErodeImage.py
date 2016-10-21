@@ -265,20 +265,6 @@ class ErodeImageLogic:
   def __init__(self):
     pass
 
-  def hasImageData(self,volumeNode):
-    """This is a dummy logic method that
-    returns true if the passed in volume
-    node has valid image data
-    """
-    if not volumeNode:
-      print('no volume node')
-      return False
-    if volumeNode.GetImageData() == None:
-      print('no image data')
-      return False
-    return True
-
-
   def run(self,inputVolume,ROIVolume,radius,iters,connectivity,newROI):
 
     #slicer.util.delayDisplay('Erode the ROI with r=' +str(radius) + " N=" + str(iters) + " time(s)")

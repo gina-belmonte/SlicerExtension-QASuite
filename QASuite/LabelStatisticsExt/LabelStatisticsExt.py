@@ -231,7 +231,7 @@ class LabelStatisticsExtLogic(LabelStatisticsLogic):
               cont[label]=cont[label]+1
               dslab[cont[label]]=val
 
-      dx=numpy.diff(sr[0:2])[0]
+      #dx=numpy.diff(sr[0:2])[0]
       for n in range(samples):
         label=self.labelStats["Labels"][n]
         if not (ignoreZero and label == 0):
@@ -252,7 +252,8 @@ class LabelStatisticsExtLogic(LabelStatisticsLogic):
             sg1=numpy.sqrt(float(6*(n-2))/float(((n+1)*(n+3))))
             nb=int(1+numpy.log2(n)+numpy.log2(1+numpy.abs(g1)/sg1))
           elif nbins<=0:
-            nb=int(s[1]-s[0]+1) #TODO: if is not integer?
+            #nb=int(s[1]-s[0]+1) #TODO: if is not integer?
+            nb=len(numpy.unique(distr[label]))
           else:
             #Manual
             nb=nbins
