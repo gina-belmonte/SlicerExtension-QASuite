@@ -265,7 +265,6 @@ class LabelStatisticsExtLogic(LabelStatisticsLogic):
           name=colorNode.GetColorName(label) + "-" + self.grayscaleNode.GetName() + nm
 
           ntuple=nb
-          print "ciccio " + str(label) + " " + str(nb)
           hst,bins=numpy.histogram(distr[label],bins=nb,range=[s[0],s[1]],density=normalize)
 
           arrayNode = slicer.mrmlScene.GetNodesByClassByName("vtkMRMLDoubleArrayNode",name).GetItemAsObject(0)
