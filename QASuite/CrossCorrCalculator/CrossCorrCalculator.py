@@ -51,7 +51,7 @@ class CrossCorrCalculatorWidget(ScriptedLoadableModuleWidget):
     self.ArraySelector1.nodeTypes = ( ("vtkMRMLDoubleArrayNode"), "" )
     self.ArraySelector1.selectNodeUponCreation = False
     self.ArraySelector1.addEnabled = False
-    self.ArraySelector1.removeEnabled = False
+    self.ArraySelector1.removeEnabled = True
     self.ArraySelector1.noneEnabled = True
     self.ArraySelector1.showHidden = False
     self.ArraySelector1.showChildNodeTypes = False
@@ -66,7 +66,7 @@ class CrossCorrCalculatorWidget(ScriptedLoadableModuleWidget):
     self.ArraySelector2.nodeTypes = ( ("vtkMRMLDoubleArrayNode"), "" )
     self.ArraySelector2.selectNodeUponCreation = False
     self.ArraySelector2.addEnabled = False
-    self.ArraySelector2.removeEnabled = False
+    self.ArraySelector2.removeEnabled = True
     self.ArraySelector2.noneEnabled = True
     self.ArraySelector2.showHidden = False
     self.ArraySelector2.showChildNodeTypes = False

@@ -187,7 +187,7 @@ class LabelStatisticsExtLogic(LabelStatisticsLogic):
 
       s=[numpy.Inf,-numpy.Inf]
       start=0
-      if ignoreZero:
+      if ignoreZero and samples>1:
         start=1
 
       for ln in range(start,samples):
@@ -285,8 +285,8 @@ class LabelStatisticsExtLogic(LabelStatisticsLogic):
           state = chartNode.StartModify()
           chartNode.AddArray(name, arrayNode.GetID())
           chartViewNode.SetChartNodeID(chartNode.GetID())
-          chartNode.SetProperty('default', 'title', 'Label Statistics')
-          chartNode.SetProperty('default', 'xAxisLabel', 'Values')
+          chartNode.SetProperty('default', 'title', 'Histogram')
+          chartNode.SetProperty('default', 'xAxisLabel', 'Grey Values')
           chartNode.SetProperty('default', 'yAxisLabel', valueToPlot)
           chartNode.SetProperty('default', 'type', 'Line');
           chartNode.SetProperty('default', 'xAxisType', 'quantitative')
