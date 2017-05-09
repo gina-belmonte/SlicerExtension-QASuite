@@ -20,6 +20,7 @@ class QCUtil:
         thresh.SetInValue(1)
         thresh.SetOutValue(0)
         thresh.SetOutputScalarType(im.GetScalarType())
+        thresh.Modified()
         thresh.Update()
                 
         stencil = vtk.vtkImageToImageStencil()

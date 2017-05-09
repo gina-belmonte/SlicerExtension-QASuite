@@ -210,7 +210,7 @@ class makeROIWidget (QCLib.genericPanel):
     iterations=1
     self.frame.enabled=False
     logic.run(self.master, self.merge, 1, iterations, connectivity, newROI)
-
+    
     sn=self.qu.getSliceNode()
     if sn:
       newROI=False

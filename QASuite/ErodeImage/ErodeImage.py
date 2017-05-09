@@ -321,6 +321,7 @@ class ErodeImageLogic:
       thresh.SetInValue(fg)
       thresh.SetOutValue(bg)
       thresh.SetOutputScalarType(ROIImage.GetScalarType())
+      thresh.Modified()
       thresh.Update()
 
       ROIImage.DeepCopy(thresh.GetOutput())
@@ -337,7 +338,7 @@ class ErodeImageLogic:
       eroder = slicer.vtkImageErodeExt()
       eroder.SetInputData(ROIImage)
       eroder.SetOutput(ImageBuffer)
-
+      
       #slicer.util.delayDisplay('create kernel')
       #eroder.SetForeground(fg)
       eroder.SetbutForeground(True)
@@ -349,14 +350,14 @@ class ErodeImageLogic:
         eroder.SetNeighborTo4()
       else:
         eroder.setConnectivity2D()
-      
+        
       for f in range(1,int(ROIImage.GetScalarRange()[1]+1)):
         eroder.SetForeground(f)
 
         #slicer.util.delayDisplay('eroding label = ' + str(f))
 
         for n in range(iterations):
-          #ImageBuffer.DeepCopy(ROIImage)
+          ImageBuffer.DeepCopy(ROIImage)
           eroder.Update()
           ROIImage.DeepCopy(ImageBuffer)
           

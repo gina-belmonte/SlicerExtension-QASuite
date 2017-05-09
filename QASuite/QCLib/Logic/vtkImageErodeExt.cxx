@@ -172,7 +172,6 @@ static void vtkImageErodeExtExecute(vtkImageErodeExt *self,
     (outMax1-outMin1+1)/50.0);
   target++;
 
-
   // loop through components
   for (outIdxC = 0; outIdxC < numComps; ++outIdxC)
     {

@@ -59,6 +59,12 @@ class GeometricDistortionWidget  (makeROIWidget):
 
     parametersFormLayout=qt.QFormLayout(self.label)
 
+    self.overrideROI = ctk.ctkCheckBox()
+    self.overrideROI.setText('Override ROI if exists')
+    self.overrideROI.enabled=False
+    self.overrideROI.checked=True
+    parametersFormLayout.addRow(self.overrideROI)
+
     self.sliceslider = slicer.qMRMLSliceControllerWidget()
     self.sliceslider.enabled=False
     parametersFormLayout.addRow("Rods Slice", self.sliceslider)
@@ -249,6 +255,7 @@ class GeometricDistortionWidget  (makeROIWidget):
     self.master = self.masterSelector.currentNode()
     merge=None
 
+    self.overrideROI.enabled=False
     self.sliceslider.enabled=False
     self.autothr.enabled=False
     self.autothreshold()
@@ -262,6 +269,7 @@ class GeometricDistortionWidget  (makeROIWidget):
 
     #-----mergeVolume()
     if self.master:
+      self.overrideROI.enabled=True
       self.autothr.enabled=True
       self.autothreshold()
 
@@ -337,7 +345,7 @@ class GeometricDistortionWidget  (makeROIWidget):
       idx=self.qu.getSliceIndexFromOffset(sn.GetSliceOffset(),self.master)
       print("offest: " + str(sn.GetSliceOffset()))
       print("slice: " + str(idx))
-      logic.run(self.master,self.merge,self.thr.maximumValue,self.thr.minimumValue,idx)
+      logic.run(self.master,self.merge,self.thr.maximumValue,self.thr.minimumValue,idx,self.overrideROI.checked)
       if logic.DGP:
         self.items[2].setText(logic.sides[0])
         self.items[3].setText(logic.DGP[0])
@@ -377,20 +385,7 @@ class GeometricDistortionLogic:
   def __init__(self):
     pass
 
-  def hasImageData(self,volumeNode):
-    """This is a dummy logic method that
-    returns true if the passed in volume
-    node has valid image data
-    """
-    if not volumeNode:
-      print('no volume node')
-      return False
-    if volumeNode.GetImageData() == None:
-      print('no image data')
-      return False
-    return True
-
-  def run(self,inputVolume,outputVolume,maxThr,minThr,slice):
+  def run(self,inputVolume,outputVolume,maxThr,minThr,slice,override=True):
     """
     Estimate DGP
     """
@@ -404,37 +399,13 @@ class GeometricDistortionLogic:
     self.diagonals=None
     self.nears=None
 
-    slicer.util.delayDisplay('Identify islands')
-    self.identIslands()
+    if override:
+      slicer.util.delayDisplay('Identify islands')
+      self.identIslands()
 
     t1=time.time()
     slicer.util.delayDisplay('Estimate DGP')
     self.getDGP()
-    t2=time.time()
-    print(t2-t1)
-
-    return True
-
-  def runPyth(self,inputVolume,outputVolume,maxThr,minThr,slice):
-    """
-    Estimate DGP
-    """
-    self.volume=inputVolume
-    self.label=outputVolume
-    self.thrRange=[minThr,maxThr]
-    self.sliceidx=slice
-
-    self.DGP=None
-    self.sides=None
-    self.diagonals=None
-    self.nears=None
-
-    slicer.util.delayDisplay('Identify islands')
-    self.identIslands()
-
-    slicer.util.delayDisplay('Estimate DGP')
-    t1=time.time()
-    self.getDGPPyth()
     t2=time.time()
     print(t2-t1)
 
@@ -471,6 +442,7 @@ class GeometricDistortionLogic:
     thresh.SetInValue(1)
     thresh.SetOutValue(0)
     thresh.SetOutputScalarType(vtk.VTK_SHORT)
+    thresh.Modified()
     thresh.Update()
 
     islandM=vtkITK.vtkITKIslandMath()
@@ -478,8 +450,6 @@ class GeometricDistortionLogic:
     islandM.Update()
 
     labelImage.DeepCopy(islandM.GetOutput())
-
-
 
   def getCOG(self,volumeNode,labelVal):
     COG = []

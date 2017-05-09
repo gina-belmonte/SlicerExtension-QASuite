@@ -247,6 +247,7 @@ class makeROIGhostLogic:
     thresh.SetInValue(1)
     thresh.SetOutValue(0)
     thresh.SetOutputScalarType(vtk.VTK_SHORT)
+    thresh.Modified()
     thresh.Update()
 
     node=slicer.vtkMRMLScalarVolumeNode()
@@ -262,6 +263,7 @@ class makeROIGhostLogic:
     slicer.mrmlScene.RemoveNode(node)
     
     thresh.ThresholdBetween(hi+1, hi+1)
+    thresh.Modified()
     thresh.Update()
     labelImage.DeepCopy(thresh.GetOutput())
 
@@ -352,6 +354,7 @@ class makeROIGhostLogic:
     thresh.SetInValue(1)
     thresh.SetOutValue(0)
     thresh.SetOutputScalarType(vtk.VTK_SHORT)
+    thresh.Modified()
     thresh.Update()
 
     node=slicer.vtkMRMLScalarVolumeNode()
@@ -367,6 +370,7 @@ class makeROIGhostLogic:
     slicer.mrmlScene.RemoveNode(node)
     
     thresh.ThresholdBetween(hi+1, hi+1)
+    thresh.Modified()
     thresh.Update()
     labelImage.DeepCopy(thresh.GetOutput())
 
@@ -464,6 +468,7 @@ class makeROIGhostLogic:
     thresh.SetInValue(1)
     thresh.SetOutValue(0)
     thresh.SetOutputScalarType(vtk.VTK_SHORT)
+    thresh.Modified()
     thresh.Update()
 
     node=slicer.vtkMRMLScalarVolumeNode()
@@ -542,6 +547,7 @@ class makeROIGhostLogic:
     thresh.SetInValue(1)
     thresh.SetOutValue(0)
     thresh.SetOutputScalarType(vtk.VTK_SHORT)
+    thresh.Modified()
     thresh.Update()
 
     node=slicer.vtkMRMLScalarVolumeNode()
